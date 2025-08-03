@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load dictionary_filters %}
+
+{% block content %}
+<div class="container">
+        <div class="text-center mb-5">
+            <h1 class="display-6 mb-3">Salles & Plages horaires disponibles</h1>
+        </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label for="filter-day">Jour</label>
+            <select id="filter-day" class="form-control">
+                <option value="">Tous</option>
+                {% for day in schedule_data.Always|dictsort:"day"|unique:"day" %}
+                    <option value="{{ day.day }}">{{ day.day }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <label for="filter-time">Heure</label>
+            <select id="filter-time" class="form-control">
+                <option value="">Tous</option>
+                {% for time in schedule_data.Always|dictsort:"time"|unique:"time" %}
+                    <option value="{{ time.time }}">{{ time.time }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <label for="filter-type">Type de salle</label>
+            <select id="filter-type" class="form-control">
+                <option value="">Tous</option>
+                {% for type in schedule_data.Always|dictsort:"space.room_type.name"|unique:"space.room_type.name" %}
+                    <option value="{{ type.space.room_type.name }}">{{ type.space.room_type.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <label for="filter-room">Numéro de salle</label>
+            <select id="filter-room" class="form-control">
+                <option value="">Tous</option>
+                {% for room in schedule_data.Always|dictsort:"space.room_number"|unique:"space.room_number" %}
+                    <option value="{{ room.space.room_number }}">{{ room.space.room_number }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <br>
+    <!-- ✅ ALWAYS AVAILABLE SPACES -->
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Salle</th>
+                    <th>Type</th>
+                    <th>Jour</th>
+                    <th>Heure</th>
+                    <th>Module</th>
+                    <th>Type module</th>
+                    <th>Groupe</th>
+                    <th>Section</th>
+                    <th>Dates Réservées</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="session-table-body">
+                {% for space_info in schedule_data.Always %}
+                <tr data-day="{{ space_info.day }}" data-time="{{ space_info.time }}"
+                    data-type="{{ space_info.space.room_type.name }}" data-room="{{ space_info.space.room_number }}">
+                    <td>{{ space_info.space.room_number }}</td>
+                    <td>{{ space_info.space.room_type.name }}</td>
+                    <td>{{ space_info.day }}</td>
+                    <td>{{ space_info.time }}</td>
+                    <td> <!-- Module dropdown -->
+                        <select name="module" class="module-select" required>
+                            <option value="" disabled selected>-- Choisissez un module --</option>
+                            {% for module in modules %}
+                                <option value="{{ module.id }}">{{ module.module_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <select name="module_type" class="form-control TM-select" required>
+                            <option value="" disabled selected>-- Type --</option>
+                            <option value="Cours">Cours</option>
+                            <option value="TD">TD</option>
+                            <option value="TP">TP</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" name="group" class="form-control group" placeholder="Groupe" required>
+                    </td>
+                    <td>
+                        <input type="number" name="section" class="form-control section" min="1" placeholder="Section" required>
+                    </td>
+                    <td>
+                        {% for date_info in space_info.unavailable_dates_list %}
+                            <span style="color: {% if '(Votre réservation)' in date_info %}green{% elif '(Votre réservation - En attente)' in date_info %}orange{% else %}red{% endif %}">
+                                {{ date_info }}<br>
+                            </span>
+                            {% if not forloop.last %} {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <form method="post" action="{% url 'bookSpace' %}" data-ajax-form data-page-identifier="book_space" novalidate onsubmit="return false;">
+                            {% csrf_token %}
+                            <input type="hidden" name="space" value="{{ space_info.space.id }}">
+                            <input type="hidden" name="day" value="{{ space_info.day }}">
+                            <input type="hidden" name="time" value="{{ space_info.time }}">
+                            <input type="hidden" name="module" class="module-input">
+                            <input type="hidden" name="module_type" class="module-type-input">
+                            <input type="hidden" name="group" class="group-input">
+                            <input type="hidden" name="section" class="section-input">
+                            <input type="date" name="reservation_date" required class="date-checker" data-expected-day="{{ space_info.day }}">
+                            <button type="submit" class="btn btn-warning btn-sm">Réserver</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize filter dropdowns with unique values
+    const filterDay = document.getElementById('filter-day');
+    const filterTime = document.getElementById('filter-time');
+    const filterType = document.getElementById('filter-type');
+    const filterRoom = document.getElementById('filter-room');
+    const tableRows = document.querySelectorAll('#session-table-body tr');
+
+    // Function to filter table rows
+    function filterTable() {
+        const dayValue = filterDay.value;
+        const timeValue = filterTime.value;
+        const typeValue = filterType.value;
+        const roomValue = filterRoom.value;
+
+        tableRows.forEach(row => {
+            const rowDay = row.getAttribute('data-day');
+            const rowTime = row.getAttribute('data-time');
+            const rowType = row.getAttribute('data-type');
+            const rowRoom = row.getAttribute('data-room');
+
+            const dayMatch = !dayValue || rowDay === dayValue;
+            const timeMatch = !timeValue || rowTime === timeValue;
+            const typeMatch = !typeValue || rowType === typeValue;
+            const roomMatch = !roomValue || rowRoom === roomValue;
+
+            if (dayMatch && timeMatch && typeMatch && roomMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Add event listeners to all filters
+    filterDay.addEventListener('change', filterTable);
+    filterTime.addEventListener('change', filterTable);
+    filterType.addEventListener('change', filterTable);
+    filterRoom.addEventListener('change', filterTable);
+
+    //handling form submittion is in base.html .  no need to redo it here
+
+    // Date validation
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('date-checker')) {
+            const input = e.target;
+            const selectedDate = new Date(input.value);
+            const dayOfWeek = selectedDate.getDay(); // 0-6
+
+            const frenchDays = ["DIMANCHE", "LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI"];
+            const selectedDayName = frenchDays[dayOfWeek];
+            const expectedDay = input.dataset.expectedDay;
+
+            if (selectedDayName !== expectedDay) {
+                alert(`⚠️ Le jour choisi (${selectedDayName}) ne correspond pas au jour prévu (${expectedDay}).`);
+                input.value = ""; // reset input
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %}

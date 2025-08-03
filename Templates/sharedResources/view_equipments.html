@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-6 mb-3">⚙️ Equipements</h1>
+    </div>
+    {% for department, types in equipment_data.items %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-building"></i> {{ department }}</h4>
+            </div>
+            <div class="card-body">
+
+                {% for equip_type, equips in types.items %}
+                    <h5 class="text-secondary mt-3"><i class="bi bi-tools"></i> {{ equip_type }}</h5>
+
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for equip in equips %}
+                            <div class="col">
+                                <div class="card h-100 border-0 bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title mb-2">
+                                            <i class="bi bi-cpu-fill"></i> {{ equip.Brand|default:"Unknown Brand" }}
+                                        </h6>
+                                        <p class="card-text">
+                                            <strong>Num série:</strong> {{ equip.Nserie }}<br>
+                                            <strong>Status:</strong>
+                                            {% if equip.Status == 'New' %}
+                                                <span class="badge bg-success">{{ equip.Status }}</span>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">{{ equip.Status }}</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                {% endfor %}
+
+            </div>
+        </div>
+    {% empty %}
+        <div class="alert alert-info text-center">No equipments available.</div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load dictionary_filters %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-5">
+                <h1 class="display-6 mb-3">📘 Modules & Enseignants</h1>
+            </div>
+
+            <!-- Semester Tabs -->
+            {% if has_semesters %}
+            <ul class="nav nav-tabs semester-tabs justify-content-center mb-4" id="semesterTabs">
+                {% for semester in semesters %}
+                <li class="nav-item">
+                    <a class="nav-link {% if forloop.first %}active{% endif %}"
+                       data-bs-toggle="tab"
+                       href="#semester{{ semester }}">
+                        {{ semester|upper }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <!-- Semester Tab Content -->
+            <div class="tab-content" id="semesterTabContent">
+                {% for semester in semesters %}
+                <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="semester{{ semester }}">
+                    {% with semester_modules=module_enseignants|get_item:semester %}
+                        {% if semester_modules %}
+                            {% for module, enseignants in semester_modules.items %}
+                                <div class="card shadow-sm mb-4 border-start border-3 border-primary">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-dark mb-2">
+                                            {{ module.module_name }}
+                                            {% if module.module_nom_complet %}
+                                                <small class="text-muted">— {{ module.module_nom_complet }}</small>
+                                            {% endif %}
+                                        </h5>
+
+                                        <p class="mb-1">
+                                            <strong>Spécialité:</strong> {{ module.specialityMod.name }}<br>
+                                            <strong>Semestre:</strong> {{ module.get_semester_display }}<br>
+                                            <strong>Contenu:</strong>
+                                            {% if module.nbrTDSemaine|default:0 > 0 %}TD{% endif %}
+                                            {% if module.nbrTPSemaine|default:0 > 0 %} TP{% endif %}
+                                            {% if module.nbrCoursSemaine|default:0 > 0 %} Cours{% endif %}<br>
+                                            <strong>Crédit:</strong> {{ module.credit|default:"—" }}<br>
+                                            <strong>Coefficient:</strong> {{ module.coefficient|default:"—" }}<br>
+                                            <strong>Mode d'évaluation:</strong> {{ module.get_mode_evaluation_display }}
+                                        </p>
+
+                                        <h6 class="mt-3 mb-2 text-secondary">Enseignants:</h6>
+                                        {% if enseignants %}
+                                            <div class="d-flex flex-wrap gap-2">
+                                                {% for prof in enseignants %}
+                                                    <span class="badge bg-primary">
+                                                        {{ prof.user.first_name }} {{ prof.user.last_name }}
+                                                        {% if prof.grade %} ({{ prof.grade }}){% endif %}
+                                                    </span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <p class="text-muted mb-0">Aucun enseignant attribué à ce module.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state text-center py-5">
+                                <div class="empty-state-icon">📭</div>
+                                <h4>Aucun module disponible</h4>
+                                <p class="text-muted">Aucun module n'est attribué pour ce semestre.</p>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Semester tabs styling */
+    .semester-tabs {
+        margin-bottom: 1.5rem;
+        border-bottom: none;
+    }
+    .semester-tabs .nav-link {
+        font-weight: 600;
+        color: #495057;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        margin: 0 0.25rem;
+    }
+    .semester-tabs .nav-link.active {
+        color: #0d6efd;
+        background-color: transparent;
+        border-bottom: 3px solid #0d6efd;
+    }
+    .semester-tabs .nav-link:hover:not(.active) {
+        color: #0d6efd;
+        background-color: transparent;
+    }
+
+    /* Empty state styling */
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #6c757d;
+    }
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Card styling */
+    .card {
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        border-radius: 0;
+    }
+    .card-title {
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

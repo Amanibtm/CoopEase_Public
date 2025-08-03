@@ -1,0 +1,95 @@
+{% if request.resolver_match.url_name != 'login' %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-secondary" href="{% if user.is_authenticated %}
+                                            {% if user.role == 'advancedUser' %}
+                                                {% url 'homepageAdvuser' %}
+                                            {% else %}
+                                                {% url 'homepageBasicuser' %}
+                                            {% endif %}
+                                        {% else %}
+                                            {% url 'login' %}
+                                        {% endif %}">
+             CoopEase
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                {% if user.is_authenticated %}
+                    {% if user.role == 'advancedUser' %}
+
+                        <!-- Tâches -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'taches' %}" title="Les tâches de travail">Tâches</a>
+                        </li>
+
+
+                        <!--consultations-->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Consultations</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="nav-link" href="{% url 'listeModules' %}" title="détails des modules">Modules</a></li>
+                                <li><a class="nav-link" href="{% url 'viewSpaces' %}" title="Salles Disponibles">Salles Disponibles</a></li>
+                                <li><a class="nav-link" href="{% url 'viewEqp' %}" title="Équipements Disponibles">Équipements Disponibles</a></li>
+                                <li><a class="nav-link" href="{% url 'viewAdvusers' %}" title="Collègues enseignants">Collègues Enseignants</a></li>
+                            </ul>
+                        </li>
+
+                        <!--opérations-->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Opérations</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="nav-link" href="{% url 'bookSpace' %}" title="Réserver une salle diponible">Réserver salle</a></li>
+                                <li><a class="nav-link" href="{% url 'bookAbsentSpace' %}" title="Réserver une salle occasionellement diponible">Réserver salle (occasionellement diponible)</a></li>
+                                <li><a class="nav-link" href="{% url 'SelectBusyTime' %}" title="Indiquer mes Indisponibilités">Indiquer mes indisponibilités</a></li>
+                                <li><a class="nav-link" href="{% url 'announceAbsence' %}" title="Annoncer une absence">Annoncer absence</a></li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item"><a class="nav-link" href="{% url 'operationsHistory' %}" title="Historique de mes réservations">Mes réservations</a></li>
+
+                        {% if user.Advanceduser_profile.Role.name == "Responsable" %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Gestion</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'approveResr' %}" title="Réservations">Réservations</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'approveIndispo' %}" title="Indisponibilités">Indisponibilités</a></li>
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ScheduleDisplay' %}" title="Emploi du temps promo|mon groupe">Emplois du temps</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'tabAffichage' %}" title="Les absences, les remplacements et les nouvelles séances seront annoncés ici">Affichage</a></li>
+                        <li><a class="nav-link" href="{% url 'listeModules' %}" title="Détails des modules que j'étudie">Modules</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'viewAdvusers' %}" title="Mes enseignants">Enseignants</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'bookGroup' %}" title="Réservations">Groupe</a></li>
+
+                    {% endif %}
+                {% endif %}
+            </ul>
+
+            {% if user.is_authenticated %}
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> {{ user.first_name }} {{ user.last_name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'Logout' %}">Déconnexion</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            {% else %}
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Connexion</a></li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+{% endif %}

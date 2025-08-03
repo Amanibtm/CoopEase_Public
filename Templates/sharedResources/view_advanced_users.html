@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-6 mb-3">👨‍🏫 Enseignants</h1>
+    </div>
+    {% if users_data %}
+        {% for key, users in users_data.items %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{{ key }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for user in users %}
+                            <div class="col">
+                                <div class="card h-100 border-0 bg-light">
+                                    <div class="card-body text-center">
+                                        {% if user.photo %}
+                                            <img src="{{ user.photo.url }}" alt="{{ user.first_name }}" class="rounded-circle mb-3" width="80" height="80">
+                                        {% else %}
+                                            <div class="mb-3">
+                                                <i class="bi bi-person-circle" style="font-size: 3rem;"></i>
+                                            </div>
+                                        {% endif %}
+                                        <h5 class="card-title">{{ user.first_name }} {{ user.last_name }}</h5>
+                                        <p class="card-text">
+                                            <strong>Email:</strong> {{ user.email }}<br>
+                                            <strong>Téléphone:</strong> {{ user.phone_number|default:"N/A" }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info text-center">
+            Aucun utilisateur avancé trouvé.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

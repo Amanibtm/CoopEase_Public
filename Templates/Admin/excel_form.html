@@ -1,0 +1,14 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block content %}
+  <h2>📥 Importer un fichier Excel</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Importer</button>
+    <a href=".." class="btn btn-secondary">Annuler</a>
+  </form>
+  <a class="btn btn-primary" href="{% static 'forms/inscription_formulaire.docx' %}" download="inscription_formulaire.docx">
+    Télécharger le formulaire d’inscription (DOCX)
+  </a>
+{% endblock %}

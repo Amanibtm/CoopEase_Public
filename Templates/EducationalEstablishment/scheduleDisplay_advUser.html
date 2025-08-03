@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load dictionary_filters %}
+
+{% block content %}
+
+    <title>Tâches de travail</title>
+    <style>
+        .centered-container {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .nav-tabs {
+            border-bottom: none;
+            justify-content: center;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .timetable {
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+        .table-bordered {
+            border-color: #6c757d;
+            border-width: 1px;
+        }
+        .timetable th, .timetable td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 0.5rem;
+        }
+        .timetable th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .time-header {
+            background-color: #e9ecef;
+            font-weight: 500;
+        }
+        .day-header {
+            background-color: #dee2e6;
+            font-weight: 500;
+        }
+        .course-cell {
+            background-color: #e2e6ea;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 0.85rem;
+            padding: 0.3rem;
+        }
+        .speciality-header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+    </style>
+    <div class="container centered-container">
+    <div class="col-md-12 mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-6 mb-3">📚 Emploi du Temps</h1>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs justify-content-center mb-4">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#prof">
+                    Taches de travail de M.{{user.first_name}}
+                </a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="prof">  <!-- Changed to show active by default -->
+                {% if timetable %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered timetable">
+                            <thead>
+                                <tr>
+                                    <th class="day-header">Jour/Heure</th>
+                                    {% for time_slot in time_slots %}
+                                        <th class="time-header">{{ time_slot }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for day_name, time_data in timetable.items %}
+                                <tr>
+                                    <td class="day-header">{{ day_name }}</td>
+                                    {% for time_slot in time_slots %}
+                                        <td>
+                                            {% if time_data|get_item:time_slot %}
+                                                {% for session in time_data|get_item:time_slot %}
+                                                    {% if session.mtype|equals:"Cours" %}
+                                                        {% if session.group|equals:"Tous" %}
+
+                                                            <div class="course-cell">
+                                                                <strong>{{ session.speciality }} - {{ session.module }}</strong><br>
+                                                                {{ session.mtype }} /
+                                                                Salle: {{ session.room }}<br>
+                                                                {{session.section}}
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="course-cell">
+                                                                <strong>{{ session.speciality }} - {{ session.module }}</strong><br>
+                                                                {{ session.mtype }} /
+                                                                Salle: {{ session.room }}<br>
+                                                                {{session.section}} / G{{session.group}}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <div class="course-cell">
+                                                            <strong>{{ session.speciality }} - {{ session.module }}</strong><br>
+                                                            {{ session.mtype }} /
+                                                            Salle: {{ session.room }}<br>
+                                                            {{session.section}} / G{{session.group}}
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h4>Aucun emploi du temps disponible</h4>
+                        <p class="text-muted">Le calendrier des cours n'a pas encore été publié.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Info Section
+        <div class="alert alert-info mt-4 text-center">
+            <i class="bi bi-info-circle"></i> Les modifications seront notifiées ici dès que disponibles.
+        </div>-->
+    </div>
+    </div>
+{% endblock %}

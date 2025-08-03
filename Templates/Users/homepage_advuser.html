@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4">👋 Bienvenue, {{ user.first_name }} {{ user.last_name }}</h1>
+        <p class="lead mt-3">Utilisez le menu de navigation pour accéder aux différentes fonctionnalités.</p>
+    </div>
+</div>
+{% endblock %}

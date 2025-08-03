@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+
+    <!--handling form submittion is in base.html .  no need to redo it here-->
+
+    <div class="text-center mb-5">
+            <h1 class="display-6 mb-3">🔄 Salles Occasionnellement Disponibles (En cas d'absence)</h1>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Salle</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Jour</th>
+                    <th>Heure</th>
+                    <th>Module</th>
+                    <th>Type module</th>
+                    <th>Groupe</th>
+                    <th>Section</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for space_info in schedule_data.Occasional %}
+                <tr>
+                    <td>{{ space_info.space.room_number }}</td>
+                    <td>{{ space_info.space.room_type.name }}</td>
+                    <td>{{ space_info.date|date:"d-m-Y" }}</td>
+                    <td>{{ space_info.day }}</td>
+                    <td>{{ space_info.time }}</td>
+                    <td> <!-- 🚀 Module Dropdown -->
+                            <select name="module" class="module-select" required>
+                                <option value="" disabled selected>-- Choisissez un module --</option>
+                                {% for module in modules %}
+                                    <option value="{{ module.id }}">{{ module.module_name }}</option>
+                                {% endfor %}
+                            </select>
+                    </td>
+                    <td>
+                        <select name="module_type" class="form-control TM-select" required>
+                            <option value="" disabled selected>-- Type --</option>
+                            <option value="Cours">Cours</option>
+                            <option value="TD">TD</option>
+                            <option value="TP">TP</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" name="group" class="form-control group" placeholder="Groupe" required>
+                    </td>
+                    <td>
+                        <input type="number" name="section" class="form-control section" min="1" placeholder="Section" required>
+                    </td>
+                    <td>{{ space_info.status }}</td>
+                    <td>
+                        {% if space_info.status == "Disponible" %}
+                        <form method="post" action="{% url 'bookAbsentSpace' %}" data-ajax-form data-page-identifier="book_occasional">
+                            {% csrf_token %}
+                            <input type="hidden" name="space" value="{{ space_info.space.id }}">
+                            <input type="hidden" name="day" value="{{ space_info.day }}">
+                            <input type="hidden" name="time" value="{{ space_info.time }}">
+                            <input type="hidden" name="module" class="module-input">
+                            <input type="hidden" name="module_type" class="module-type-input">
+                            <input type="hidden" name="group" class="group-input">
+                            <input type="hidden" name="section" class="section-input">
+                            <input type="hidden" name="date" value="{{ space_info.date }}">
+                            <button type="submit" class="btn btn-warning btn-sm">Réserver</button>
+                        </form>
+                        {% else %}
+                        <button class="btn btn-secondary btn-sm" disabled>Indisponible</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

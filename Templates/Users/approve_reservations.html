@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+
+<!-- Existing Pending Reservations Table -->
+    <div class="text-center mb-5">
+            <h1 class="display-6 mb-3">Réservations pas encore Approuvées</h1>
+    </div>
+
+<div class="table-responsive mb-5">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Enseignant</th>
+                <th>Salle</th>
+                <th>Date</th>
+                <th>Jour</th>
+                <th>Heure</th>
+                <th>Module</th>
+                <th>Type</th>
+                <th>Groupe</th>
+                <th>Date de Demande</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in pending_reservations %}
+            <tr>
+                <td>{{ reservation.user.first_name }} {{ reservation.user.last_name }}</td>
+                <td>{{ reservation.chosenSpace.room_number }} ({{ reservation.chosenSpace.room_type.name }})</td>
+                <td>{{ reservation.reservation_date }}</td>
+                <td>{{ reservation.day.name }}</td>
+                <td>{{ reservation.time.start_time|time:"H:i" }}</td>
+                <td>{{ reservation.chosenModule.module_name }}</td>
+                <td>{{ reservation.Modtype }}</td>
+                <td>{{ reservation.group }}</td>
+                <td>{{ reservation.timestamp|date:"d/m/Y H:i" }}</td>
+                <td>
+                    <form method="post" class="approval-form" data-reservation-id="{{ reservation.id }}">
+                        {% csrf_token %}
+                        <button type="button" class="btn btn-success btn-sm approve-btn" data-action="approve">Approuver</button>
+                        <button type="button" class="btn btn-danger btn-sm reject-btn" data-action="reject">Rejeter</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" class="text-center">Aucune réservation en attente d'approbation</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Approved Reservations Table -->
+    <div class="text-center mb-5">
+            <h1 class="display-6 mb-3">Réservations Approuvées</h1>
+        </div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Enseignant</th>
+                <th>Salle</th>
+                <th>Date</th>
+                <th>Jour</th>
+                <th>Heure</th>
+                <th>Module</th>
+                <th>Type</th>
+                <th>Groupe</th>
+                <th>Date de Demande</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in approved_reservations %}
+            <tr>
+                <td>{{ reservation.user.first_name }} {{ reservation.user.last_name }}</td>
+                <td>{{ reservation.chosenSpace.room_number }} ({{ reservation.chosenSpace.room_type.name }})</td>
+                <td>{{ reservation.reservation_date }}</td>
+                <td>{{ reservation.day.name }}</td>
+                <td>{{ reservation.time.start_time|time:"H:i" }}</td>
+                <td>{{ reservation.chosenModule.module_name }}</td>
+                <td>{{ reservation.Modtype }}</td>
+                <td>{{ reservation.group }}</td>
+                <td>{{ reservation.section }}</td>
+                <td>{{ reservation.timestamp|date:"d/m/Y H:i" }}</td>
+                <td>
+                    <form method="post" class="approval-form" data-reservation-id="{{ reservation.id }}">
+                        {% csrf_token %}
+                        <button type="button" class="btn btn-warning btn-sm cancel-btn" data-action="cancel">Annuler</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" class="text-center">Aucune réservation approuvée</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.approve-btn, .reject-btn, .cancel-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const form = this.closest('.approval-form');
+            const reservationId = form.dataset.reservationId;
+            const action = this.dataset.action;
+            
+            fetch("{% url 'approveResr' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `reservation_id=${reservationId}&action=${action}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                    if (action === 'cancel') {
+                        location.reload();  // So the reservation comes back in pending list
+                    } else {
+                        form.closest('tr').remove(); // For approve or reject
+                    }
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Une erreur est survenue');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

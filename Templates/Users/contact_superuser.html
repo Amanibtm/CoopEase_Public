@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Demande de création de compte Gestionnaire Établissement</h2>
+  <p>Pour vous inscrire, veuillez :</p>
+  <ol>
+    <li>Télécharger et remplir le formulaire ci-dessous</li>
+    <li>Envoyer le DOCX complété à l’un des administrateurs généraux :</li>
+    <ul>
+      {% for admin in superadmins %}
+      <li>{{ admin.first_name }} {{ admin.last_name }} — {{ admin.email }}</li>
+      {% endfor %}
+    </ul>
+  </ol>
+  <a class="btn btn-primary" href="{% static 'forms/inscription_formulaire.docx' %}" download="inscription_formulaire.docx">
+    Télécharger le formulaire d’inscription (DOCX)
+  </a>
+
+</div>
+{% endblock %}

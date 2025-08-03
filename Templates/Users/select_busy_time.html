@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Important Note -->
+            <div class="alert alert-info d-inline-block text-start" style="max-width: 700px;">
+                <i class="bi bi-info-circle"></i>
+                <strong>Note :</strong>
+                Les indisponibilités seront prises en compte uniquement lors de la génération des emplois du temps.
+                Veuillez indiquer uniquement les périodes où vous serez occupé(e) pendant <strong>3 mois</strong> ou plus.
+            </div>
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">🕒 Sélectionner les heures d'indisponibilité</h3>
+                </div>
+
+                <div class="card-body">
+                    {% if error %}
+                        <div class="alert alert-danger text-center mb-3 rounded-3">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+
+                    {% if success %}
+                        <div class="alert alert-success text-center mb-3 rounded-3">
+                            {{ success }}
+                        </div>
+                    {% endif %}
+
+                    <div class="accordion mb-4" id="accordionPrevious">
+                      <div class="accordion-item border-0 shadow-sm">
+                        <h2 class="accordion-header" id="headingOne">
+                          <button class="accordion-button bg-light text-dark collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            Voir mes horaires d’indisponibilité précédents
+                          </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionPrevious">
+                          <div class="accordion-body">
+                            <ul class="list-group list-group-flush">
+                              {% for entry in previous_entries %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                  <div>
+                                    <strong>{{ entry.busyday.name }}:</strong>
+                                    {% for slot in entry.busytime.all %}
+                                      <span class="badge bg-secondary me-1">{{ slot }}</span>
+                                    {% endfor %}
+                                    {% if entry.is_approved %}
+                                      <i class="ms-2 text-success bi bi-check-circle-fill" title="Confirmé"></i>
+                                    {% else %}
+                                      <i class="ms-2 text-muted bi bi-hourglass-split" title="En attente de confirmation"></i>
+                                    {% endif %}
+                                  </div>
+                                  <form method="post" action="{% url 'delete_busy_entry' entry.id %}" onsubmit="return confirm('Supprimer cette indisponibilité ?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                  </form>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item text-center text-muted">Aucune indisponibilité enregistrée.</li>
+                            {% endfor %}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            {{ form.as_p }}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary text-white">
+                                 Enregistrer
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                                 Retour
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

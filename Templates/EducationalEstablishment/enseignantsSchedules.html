@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load dictionary_filters %}
+
+{% block content %}
+
+    <title>Afficher Tâches de travail</title>
+    <style>
+        /* Your existing styles remain the same */
+        .centered-container {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .nav-tabs {
+            border-bottom: none;
+            justify-content: center;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .session-header {
+            margin: 1.5rem 0;
+            color: #2c3e50;
+        }
+        .timetable {
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+        .table-bordered {
+            border-color: #6c757d;
+            border-width: 1px;
+        }
+        .timetable th, .timetable td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 0.5rem;
+        }
+        .timetable th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .time-header {
+            background-color: #e9ecef;
+            font-weight: 500;
+        }
+        .day-header {
+            background-color: #dee2e6;
+            font-weight: 500;
+        }
+        .course-cell {
+            background-color: #e2e6ea;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 0.85rem;
+        }
+        .speciality-header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        /* New style for semester tabs */
+        .semester-tabs {
+            margin-bottom: 1rem;
+        }
+        .semester-tabs .nav-link {
+            font-weight: bold;
+        }
+    </style>
+
+<div class="container centered-container">
+    <div class="col-md-12 mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-6 mb-3">📚 Emploi du Temps</h1>
+            {% if academic_year %}
+                <p class="text-muted">Année scolaire: {{ academic_year }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Semester Tabs -->
+        {% if has_semesters %}
+        <ul class="nav nav-tabs semester-tabs justify-content-center mb-3" id="semesterTabs">
+            {% for semester in semesters %}
+            <li class="nav-item">
+                <a class="nav-link {% if forloop.first %}active{% endif %}"
+                   data-bs-toggle="tab"
+                   href="#semester{{ semester }}">
+                    {{ semester|upper }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <!-- Semester Tab Content -->
+        <div class="tab-content" id="semesterTabContent">
+            {% for semester in semesters %}
+            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="semester{{ semester }}">
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-tabs justify-content-center mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#mySchedule{{ semester }}">
+                             M.{{user.first_name}}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#allSchedules{{ semester }}">
+                            Tous
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- My Schedule -->
+                    <div class="tab-pane fade show active" id="mySchedule{{ semester }}">
+                        {% with semester_data=timetable|get_item:semester %}
+                            {% if semester_data %}
+                                <div class="table-responsive">
+                                    <table class="table table-bordered timetable">
+                                        <thead>
+                                            <tr>
+                                                <th class="day-header">Jour/Heure</th>
+                                                {% for time_slot in time_slots %}
+                                                    <th class="time-header">{{ time_slot }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for day_name, time_data in semester_data.items %}
+                                            <tr>
+                                                <td class="day-header">{{ day_name }}</td>
+                                                {% for time_slot in time_slots %}
+                                                    <td>
+                                                        {% if time_data|get_item:time_slot %}
+                                                            {% for session in time_data|get_item:time_slot %}
+                                                                {% if session.mtype|equals:"Cours" %}
+                                                                    {% if session.group|equals:"Tous" %}
+                                                                        <div class="course-cell" title="{{ session.module }} - {{ session.professor }}">
+                                                                            <strong>{{ session.speciality }} - {{ session.module }}</strong><br>
+                                                                            {{ session.mtype }} /
+                                                                            Salle: {{ session.room }}<br>
+                                                                            {{session.section}}
+                                                                        </div>
+                                                                    {% else %}
+                                                                        <div class="course-cell" title="{{ session.module }} - {{ session.professor }}">
+                                                                            <strong>C-{{ session.module }}</strong><br>
+                                                                            G{{ session.group }} / {{ session.professor }}<br>
+                                                                            {{ session.room }}
+                                                                        </div>
+                                                                    {% endif %}
+                                                                {% else %}
+                                                                    <div class="course-cell" title="{{ session.module }} - {{ session.professor }}">
+                                                                        <strong>{{ session.speciality }} - {{ session.module }}</strong><br>
+                                                                        {{ session.mtype }} /
+                                                                        Salle: {{ session.room }}<br>
+                                                                        {{session.section}} / G{{session.group}}
+                                                                    </div>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📭</div>
+                                    <h4>Aucun emploi du temps disponible</h4>
+                                    <p class="text-muted">Le calendrier des cours n'a pas encore été publié.</p>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+
+                    <!-- All Schedules -->
+                    <div class="tab-pane fade" id="allSchedules{{ semester }}">
+                        <!-- Filtrage -->
+                        <div id="filtersContainer{{ semester }}" class="row mb-4 d-none">
+                            <div class="col-md-4 mb-2">
+                                <select class="form-select" id="filterModule{{ semester }}">
+                                    <option value="">🔍 Filtrer par Module</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <select class="form-select" id="filterSalle{{ semester }}">
+                                    <option value="">🏫 Filtrer par Salle</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <select class="form-select" id="filterProf{{ semester }}">
+                                    <option value="">👨‍🏫 Filtrer par Enseignant</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {% with semester_data=all_timetable|get_item:semester %}
+                            {% if semester_data %}
+                                {% for speciality, sections in semester_data.items %}
+                                    {% for section, timeSched in sections.items %}
+                                        <div class="speciality-header text-center">
+                                            <h5>{{speciality}} - {{ section }}</h5>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered timetable">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="day-header">Jour/Heure</th>
+                                                        {% for time_slot in time_slots %}
+                                                            <th class="time-header">{{ time_slot }}</th>
+                                                        {% endfor %}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for day_name, sessions in timeSched.items %}
+                                                    <tr>
+                                                        <td class="day-header">{{day_name}}</td>
+                                                        {% for time_slot in time_slots %}
+                                                            <td>
+                                                                {% with sessions_for_slot=sessions|get_item:time_slot %}
+                                                                    {% for session in sessions_for_slot %}
+                                                                    {% if session.mtype|equals:"Cours" %}
+                                                                        {% if session.group|equals:"Tous" %}
+                                                                            <div class="course-cell" title="{{ session.module }} - {{ session.professor }}" data-module="{{ session.module|lower }}" data-salle="{{ session.room|lower }}" data-prof="{{ session.professor|lower }}">
+                                                                                <strong>C-{{ session.module }}</strong><br>
+                                                                                {{ session.professor }}<br>
+                                                                                {{ session.room }}
+                                                                            </div>
+                                                                        {% else %}
+                                                                            <div class="course-cell" title="{{ session.module }} - {{ session.professor }}" data-module="{{ session.module|lower }}" data-salle="{{ session.room|lower }}" data-prof="{{ session.professor|lower }}">
+                                                                                <strong>C-{{ session.module }}</strong><br>
+                                                                                G{{ session.group }} / {{ session.professor }}<br>
+                                                                                {{ session.room }}
+                                                                            </div>
+                                                                        {% endif %}
+                                                                    {% else %}
+                                                                         <div class="course-cell" title="{{ session.module }} - {{ session.professor }}" data-module="{{ session.module|lower }}" data-salle="{{ session.room|lower }}" data-prof="{{ session.professor|lower }}">
+                                                                            <strong>{{session.mtype}}-{{ session.module }}</strong>/
+                                                                            G{{ session.group }}/
+                                                                            S{{ session.room }}/
+                                                                            {{ session.professor }}
+                                                                        </div>
+                                                                    {% endif %}
+                                                                    {% endfor %}
+                                                                {% endwith %}
+                                                            </td>
+                                                        {% endfor %}
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% endfor %}
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📭</div>
+                                    <h4>Aucun emploi du temps disponible</h4>
+                                    <p class="text-muted">Le calendrier des cours n'a pas encore été publié.</p>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Initialize filters for each semester
+        {% for semester in semesters %}
+        (function() {
+            const semester = '{{ semester }}';
+            const tabAllSchedules = document.querySelector('#allSchedules' + semester);
+            const filtersContainer = document.querySelector('#filtersContainer' + semester);
+
+            if (tabAllSchedules && filtersContainer) {
+                // Show filters only when "Tous" tab is active
+                const allTab = document.querySelector('[href="#allSchedules' + semester + '"]');
+                allTab.addEventListener("shown.bs.tab", function () {
+                    filtersContainer.classList.remove("d-none");
+                });
+
+                const moduleFilter = document.getElementById('filterModule' + semester);
+                const salleFilter = document.getElementById('filterSalle' + semester);
+                const profFilter = document.getElementById('filterProf' + semester);
+
+                const courseCells = tabAllSchedules.querySelectorAll('.course-cell');
+
+                // Helper to get unique values
+                const getUniqueValues = (attr) => {
+                    const values = Array.from(courseCells)
+                        .map(cell => cell.getAttribute(attr))
+                        .filter(val => val && val !== "none");
+                    return [...new Set(values)];
+                };
+
+                // Populate filters
+                getUniqueValues("data-module").forEach(value => {
+                    moduleFilter.innerHTML += `<option value="${value}">${value}</option>`;
+                });
+                getUniqueValues("data-salle").forEach(value => {
+                    salleFilter.innerHTML += `<option value="${value}">${value}</option>`;
+                });
+                getUniqueValues("data-prof").forEach(value => {
+                    profFilter.innerHTML += `<option value="${value}">${value}</option>`;
+                });
+
+                const filterCourses = () => {
+                    const selectedModule = moduleFilter.value;
+                    const selectedSalle = salleFilter.value;
+                    const selectedProf = profFilter.value;
+
+                    courseCells.forEach(cell => {
+                        const module = cell.getAttribute("data-module");
+                        const salle = cell.getAttribute("data-salle");
+                        const prof = cell.getAttribute("data-prof");
+
+                        const show =
+                            (!selectedModule || module === selectedModule) &&
+                            (!selectedSalle || salle === selectedSalle) &&
+                            (!selectedProf || prof === selectedProf);
+
+                        cell.style.display = show ? "block" : "none";
+                    });
+                };
+
+                // Attach filter listeners
+                [moduleFilter, salleFilter, profFilter].forEach(filter => {
+                    filter.addEventListener("change", filterCourses);
+                });
+            }
+        })();
+        {% endfor %}
+    });
+</script>
+{% endblock %}

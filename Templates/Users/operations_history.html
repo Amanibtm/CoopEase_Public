@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h3 class="text-center text-primary mb-4">
+                <i class="bi bi-clock-history"></i> Mes Réservations
+            </h3>
+
+            {% for operation in operations %}
+                <div class="card shadow-sm mb-4 border-start border-3 border-primary" id="operation-{{ operation.id }}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0 text-capitalize text-dark">
+                                {{ operation.type }}
+                            </h5>
+                            <small class="text-muted">
+                                {{ operation.timestamp|date:"d-m-Y H:i" }}
+                            </small>
+                        </div>
+
+                        <p class="text-muted">{{ operation.description|safe }}</p>  <!-- safe is to allow HTML inside operation.description from views -->
+
+                        <form method="post" class="cancel-form text-end">
+                            {% csrf_token %}
+                            <input type="hidden" name="operation_id" value="{{ operation.id }}">
+                            <input type="hidden" name="model_type" value="{{ operation.model }}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-center text-muted">
+                    <i class="bi bi-info-circle"></i> Aucune opération trouvée.
+                </p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .fade-out {
+        opacity: 0;
+        transition: opacity 0.5s ease-out;
+    }
+</style>
+
+<script>
+    document.querySelectorAll('.cancel-form').forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const operationId = form.querySelector('input[name="operation_id"]').value;
+            const cardElement = document.getElementById(`operation-${operationId}`);
+
+            fetch(window.location.href, {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    cardElement.classList.add('fade-out');
+                    setTimeout(() => {
+                        cardElement.remove();
+                    }, 500);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

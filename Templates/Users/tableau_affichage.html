@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-5">
+            <h1 class="display-6 mb-3">Tableau d'Affichage</h1>
+        </div>
+
+    {% for operation in operations %}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white text-center">
+                <h5>{{ operation.type }}</h5>
+            </div>
+            <div class="card-body">
+                {% if operation.type == "Séance ajoutée" %}
+                    <p><strong>Professeur:</strong> {{ operation.prof }}</p>
+                    <p><strong>Salle:</strong> {{ operation.space }}</p>
+                    <p><strong>Module:</strong> {{ operation.module }}</p>
+                    <p><strong>Jour:</strong> {{ operation.day }}</p>
+                    <p><strong>Heure:</strong> {{ operation.time }}</p>
+                    <p><strong>Groupe:</strong> {{ operation.group }}</p>
+                    <p><strong>Section:</strong> {{ operation.section }}</p>
+                    <p><strong>Date:</strong> {{ operation.date|date:"d-m-Y" }}</p>
+                {% elif operation.type == "Absence" %}
+                    <p><strong>Professeur:</strong> {{ operation.prof }}</p>
+                    <p><strong>Date d'absence:</strong> {{ operation.date|date:"d-m-Y" }}</p>
+                    <p><strong>Créneaux horaires:</strong> {{ operation.time }}</p>
+                {% endif %}
+                <p class="text-end text-muted"><small>Ajouté le: {{ operation.timestamp|date:"d-m-Y H:i" }}</small></p>
+            </div>
+        </div>
+    {% empty %}
+        <p class="text-center text-muted">Aucune opération trouvée.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% extends "admin/change_list.html" %} <!--  built-in base template : Use the normal admin list page layout, but let me override or inject my stuff inside it-->
+{% block object-tools-items %} <!-- object-tools-items is a special block for adding buttons to the top right corner of the changelist page.-->
+  <a class="addlink" href="import-excel/">Importer Excel</a>
+  {{ block.super }}  <!-- keep the normal Add button-->
+{% endblock %}
