@@ -1,4 +1,4 @@
-I, the undersigned, Amani Boutamine, hereby declare that I am the sole author of the application developed as part of my final-year academic project.
+I, the undersigned, Amani Boutamine, hereby declare that I am the sole author of the application "CoopEase" developed as part of my final-year academic project.
 
 This project was presented as a team of two; however, all technical development — including:
 
@@ -14,7 +14,7 @@ Done in Skikda, on 06/07/2025.
 
 ---
 
-Je soussignée, Amani Boutamine, déclare être l’unique auteure du développement de l’application réalisée dans le cadre de mon projet de fin d’études.
+Je soussignée, Amani Boutamine, déclare être l’unique auteure du développement de l’application "CoopEase" réalisée dans le cadre de mon projet de fin d’études.
 
 Ce projet a été présenté en binôme, mais l’ensemble du développement technique — incluant :
 
@@ -30,7 +30,7 @@ Fait à Skikda, le 06/07/2025.
 
 ---
 
-أنا الموقعة أدناه، أماني بوالطمين، أُصرّح بأنني المؤلفة الوحيدة للتطبيق الذي تم تطويره في إطار مشروع التخرج الخاص بي.
+أنا الموقعة أدناه، أماني بوالطمين، أُصرّح بأنني المؤلفة الوحيدة للتطبيق "CoopEase" الذي تم تطويره في إطار مشروع التخرج الخاص بي.
 
 تم تقديم هذا المشروع ضمن عمل ثنائي، لكن جميع مراحل التطوير التقني — بما في ذلك:
 
@@ -43,5 +43,6 @@ Fait à Skikda, le 06/07/2025.
 أحتفظ بكافة الحقوق المالية والمعنوية على الشيفرة المصدرية للتطبيق، وذلك وفقًا لأحكام الأمر رقم 03-05 المؤرخ في 19 يوليو 2003 المتعلق بحق المؤلف والحقوق المجاورة المعمول به في الجزائر.
 
 حرر بسكيكدة، بتاريخ 06/07/2025.
+
 
 
